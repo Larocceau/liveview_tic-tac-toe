@@ -9,7 +9,6 @@ defmodule TicTacToeLive.Application do
   def start(_type, _args) do
     children = [
       TicTacToeLiveWeb.Telemetry,
-      TicTacToeLive.Repo,
       {DNSCluster, query: Application.get_env(:tic_tac_toe_live, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: TicTacToeLive.PubSub},
       # Start a worker by calling: TicTacToeLive.Worker.start_link(arg)
