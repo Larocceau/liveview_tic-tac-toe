@@ -14,7 +14,8 @@ defmodule TicTacToeLive.Application do
       # Start a worker by calling: TicTacToeLive.Worker.start_link(arg)
       # {TicTacToeLive.Worker, arg},
       # Start to serve requests, typically the last entry
-      TicTacToeLiveWeb.Endpoint
+      TicTacToeLiveWeb.Endpoint,
+      TicTacToe
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
