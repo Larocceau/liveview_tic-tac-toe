@@ -6,6 +6,19 @@ defmodule TicTacToe do
   """
 
   defmodule Game do
+
+    def result?(board) do
+      case winner?(board) do
+        nil ->
+          if Enum.all?(board) do
+            :draw
+          else
+            nil
+          end
+        winner -> {:win, winner}
+      end
+    end
+
     def winner?(board) do
       cols = board |> Enum.chunk_every(3)
       r1 = board |> Enum.take_every(3)
@@ -68,7 +81,7 @@ defmodule TicTacToe do
     GenServer.cast(name, :restart)
   end
 
-  def start_link(code, opts \\Keyword.new()) do
+  def start_link(code, opts \\ Keyword.new()) do
     name = {:via, Registry, {TicTacToe.Registry, code}}
     GenServer.start_link(__MODULE__, :ok, Keyword.put_new(opts, :name, name))
   end
@@ -85,14 +98,44 @@ defmodule TicTacToe do
 
   defp pid_to_symbol(players, pid) do
     players
-    |> Enum.find_index(fn p -> p == pid end)
-    |> Kernel.then(fn v ->
-      case v do
-        0 -> :o
-        1 -> :x
-        _ -> raise "Invalid index!"
-      end
-    end)
+    |> Enum.find_value(fn {symbol, p} -> p == pid && symbol end)
+  end
+
+  defp player_and_other(symbol, players) do
+    one = players[symbol]
+    other = players |> Enum.find_value(fn {s, pid} -> s != symbol && pid end)
+
+    {one, other}
+  end
+
+  defp activate_players(state) do
+    board = state.board
+    players = state.players
+
+    {active, waiting} =
+      Game.activePlayer(board)
+      |> player_and_other(players)
+
+
+    send(active, {:ok, %{status: :your_turn, board: state.board}})
+    send(waiting, {:ok, %{status: :other_turn, board: state.board}})
+
+    state
+  end
+
+  defp announce_result(state, result) do
+    case result do
+      :draw ->
+        state.players
+        |> Enum.map(&send(&1, {:ok, %{status: :draw, board: state.board}}))
+      {:win, winner} ->
+        {winner, loser} = player_and_other(winner, state.players)
+
+        send(loser, {:ok, %{status: :you_lost, board: state.board}})
+        send(winner, {:ok, %{status: :you_won, board: state.board}})
+    end
+
+    state
   end
 
   @impl true
@@ -107,10 +150,11 @@ defmodule TicTacToe do
         {:ok, board} ->
           state = state |> Map.put(:board, board) |> Map.put(:status, :other_turn)
 
-          case Game.winner?(board) do
-            nil -> GenServer.cast(self(), :activate_player)
-            _ -> GenServer.cast(self(), :announce_winner)
-          end
+          state =
+            case Game.result?(board) do
+              nil -> activate_players(state)
+              result-> announce_result(state, result)
+            end
 
           {:reply, {:ok, state}, state}
 
@@ -121,68 +165,33 @@ defmodule TicTacToe do
   end
 
   def handle_call(:join, {pid, _}, state) do
-    IO.inspect(pid, label: "Handling join for player")
-    IO.inspect(state)
-
-    if Enum.count(state.players) < 2 do
-      players = state.players ++ [pid]
-      state = Map.put(state, :players, players)
-
-      case players do
-        [_, _] ->
-          GenServer.cast(self(), :activate_player)
-          nil
-
-        _ ->
-          nil
+    players =
+      case state.players do
+          %{x: _, o: _} -> nil
+          %{x: _} = players -> Map.put(players, :o, pid)
+          _ -> %{x: pid}
       end
 
-      IO.inspect(pid_to_symbol(state.players, pid), label: "Assigned symbol")
+    case players do
+    nil -> {:reply, {:error, :game_full, state}}
+    players ->
+      state =
+        state
+        |> Map.put(:players, players)
+
+      with %{x: _, o: _} <- players do activate_players(state) end
+
       {:reply, {:ok, %{status: :waiting, my_symbol: pid_to_symbol(state.players, pid)}}, state}
-    else
-      {:reply, {:error, "game is full"}, state}
+
     end
-  end
-
-  def handle_cast(:activate_player, state) do
-    board = state.board
-    players = state.players
-    active_player = Game.activePlayer(board)
-
-    {active, waiting} =
-      if pid_to_symbol(state.players, players |> Enum.at(0)) == active_player do
-        {players |> Enum.at(0), players |> Enum.at(1)}
-      else
-        {players |> Enum.at(1), players |> Enum.at(0)}
-      end
-
-    send(active, {:ok, %{status: :your_turn, board: state.board}})
-    send(waiting, {:ok, %{status: :other_turn, board: state.board}})
-
-    {:noreply, state}
   end
 
   def handle_cast(:restart, state) do
-    players = state.players |> Enum.reverse()
-    board = [nil, nil, nil, nil, nil, nil, nil, nil, nil]
-    GenServer.cast(self(),:activate_player)
-    {:noreply, %{players: players, board: board}}
-  end
-
-  def handle_cast(:announce_winner, state) do
-    case Game.winner?(state.board) do
-      nil ->
-        nil
-      winner ->
-        {winner, loser} =
-          case winner do
-            :x -> {state.players |> Enum.at(0), state.players |> Enum.at(1)}
-            :o -> {state.players |> Enum.at(1), state.players |> Enum.at(0)}
-          end
-
-        send(winner, {:ok, %{status: :you_lost, board: state.board}})
-        send(loser, {:ok, %{status: :you_won, board: state.board}})
-    end
+    state =
+      state
+      |> Map.put(:players, state.players |> Enum.reverse())
+      |> Map.put(:board, [nil, nil, nil, nil, nil, nil, nil, nil, nil])
+      |> activate_players()
 
     {:noreply, state}
   end

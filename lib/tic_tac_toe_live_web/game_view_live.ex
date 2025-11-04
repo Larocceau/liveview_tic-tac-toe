@@ -55,7 +55,6 @@ defmodule TicTacToeLiveWeb.GameViewLive do
 
 
   defp handle_server_message({:ok, state}, socket) do
-    IO.inspect(state, label: "Received a server message")
     status = Map.get(state, :status, :pending)
 
     socket
@@ -80,7 +79,7 @@ defmodule TicTacToeLiveWeb.GameViewLive do
   end
 
   def handle_event("restart", _, socket) do
-    TicTacToe.kill(socket.assigns.game_id)
+    TicTacToe.restart(socket.assigns.game_id)
     {:noreply, socket}
   end
 
@@ -95,9 +94,6 @@ defmodule TicTacToeLiveWeb.GameViewLive do
       <section class="mx-auto flex max-w-xl flex-col gap-6 p-8">
         <header class="space-y-2 text-center">
           <h1 class="text-3xl font-semibold text-zinc-900">Tic Tac Toe</h1>
-          <p class="text-sm text-zinc-500">
-            Challenge a friend or wait for an opponent to join.
-          </p>
           <%= if @game_id && @status == :waiting do %>
             <p class="text-xs text-zinc-400">Share this code to invite a friend: {@game_id}</p>
             <div class="flex flex-wrap justify-center gap-3">
@@ -120,7 +116,9 @@ defmodule TicTacToeLiveWeb.GameViewLive do
           <%= if not is_nil(Map.get(assigns, :board)&& Map.get(assigns, :my_symbol)) do %>
             <.board board={@board} my_symbol={@my_symbol} status={@status} />
           <% end %>
-          <button phx-click="restart" class="btn">Restart</button>
+          <%= if Enum.member?([:you_won, :you_lost, :draw], @status) do %>
+            <button phx-click="restart" class="btn">Restart</button>
+          <% end %>
         <% end %>
       </section>
     </Layouts.app>
@@ -152,6 +150,7 @@ defmodule TicTacToeLiveWeb.GameViewLive do
   defp status_message(:you_won), do: "You won!"
   defp status_message(:you_lost), do: "You lost!"
   defp status_message(:your_turn), do: "It's your turn."
+  defp status_message(:draw), do: "It's a draw!"
   defp status_message(:other_turn), do: "Waiting for your opponent..."
   defp status_message(:pending), do: "Game underway."
   defp status_message(:waiting), do: "Waiting for another player to join."
