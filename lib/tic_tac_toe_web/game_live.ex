@@ -1,4 +1,4 @@
-defmodule TicTacToeWeb.GameViewLive do
+defmodule TicTacToeWeb.GameLive do
   use TicTacToeWeb, :live_view
 
   def connect(join_code, socket) do
@@ -113,7 +113,7 @@ defmodule TicTacToeWeb.GameViewLive do
         <% else %>
           <.status_badge status={@status} />
           <%= if not is_nil(Map.get(assigns, :board)&& Map.get(assigns, :my_symbol)) do %>
-            <.board board={@board} my_symbol={@my_symbol} status={@status} />
+            <.board board={@board} my_symbol={@my_symbol} />
           <% end %>
           <%= if Enum.member?([:you_won, :you_lost, :draw], @status) do %>
             <button phx-click="restart" class="btn">Restart</button>
@@ -159,11 +159,15 @@ defmodule TicTacToeWeb.GameViewLive do
   attr :my_symbol, :atom, required: true
 
   defp board(assigns) do
-    place_holder =
-      case assigns.status do
-        :your_turn -> assigns.my_symbol
-        _ -> ""
-      end
+    assigns =
+      assign(
+        assigns,
+        :placeholder,
+        case assigns.status do
+          :your_turn -> assigns.my_symbol
+          _ -> ""
+        end
+      )
 
     ~H"""
     <table class="w-full table-fixed border-separate border-spacing-2">
@@ -181,7 +185,7 @@ defmodule TicTacToeWeb.GameViewLive do
                   phx-value-index={idx}
                   disabled={not is_nil(Enum.at(@board, idx))}
                 >
-                  {cell_label(Enum.at(@board, idx) || place_holder)}
+                  {cell_label(Enum.at(@board, idx) || @placeholder)}
                 </button>
               </td>
             <% end %>

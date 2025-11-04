@@ -1,6 +1,8 @@
 defmodule TicTacToe.GameServer do
   use GenServer
 
+  alias TicTacToe.Game
+
   @moduledoc """
   Documentation for `TicTacToe`.
   """

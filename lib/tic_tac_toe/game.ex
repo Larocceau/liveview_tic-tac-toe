@@ -1,4 +1,4 @@
-  defmodule Game do
+  defmodule TicTacToe.Game do
     def result?(board) do
       case winner?(board) do
         nil ->
