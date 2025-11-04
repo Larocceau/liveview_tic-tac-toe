@@ -15,7 +15,7 @@ defmodule TicTacToeLive.Application do
       # {TicTacToeLive.Worker, arg},
       # Start to serve requests, typically the last entry
       TicTacToeLiveWeb.Endpoint,
-      TicTacToe
+      {Registry, keys: :unique, name: TicTacToe.Registry}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
