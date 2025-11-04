@@ -53,7 +53,6 @@ defmodule TicTacToeLiveWeb.GameViewLive do
     {:noreply, handle_server_message(message, socket)}
   end
 
-
   defp handle_server_message({:ok, state}, socket) do
     status = Map.get(state, :status, :pending)
 

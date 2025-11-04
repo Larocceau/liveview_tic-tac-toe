@@ -6,7 +6,6 @@ defmodule TicTacToe do
   """
 
   defmodule Game do
-
     def result?(board) do
       case winner?(board) do
         nil ->
@@ -15,7 +14,9 @@ defmodule TicTacToe do
           else
             nil
           end
-        winner -> {:win, winner}
+
+        winner ->
+          {:win, winner}
       end
     end
 
@@ -93,7 +94,7 @@ defmodule TicTacToe do
 
   @impl true
   def init(_) do
-    {:ok, %{players: [], board: [nil, nil, nil, nil, nil, nil, nil, nil, nil]}}
+    {:ok, %{players: %{}, board: [nil, nil, nil, nil, nil, nil, nil, nil, nil]}}
   end
 
   defp pid_to_symbol(players, pid) do
@@ -101,35 +102,31 @@ defmodule TicTacToe do
     |> Enum.find_value(fn {symbol, p} -> p == pid && symbol end)
   end
 
-  defp player_and_other(symbol, players) do
-    one = players[symbol]
-    other = players |> Enum.find_value(fn {s, pid} -> s != symbol && pid end)
-
-    {one, other}
-  end
-
-  defp activate_players(state) do
-    board = state.board
-    players = state.players
-
+  defp activate_players(%{players: %{x: x_pid, o: o_pid}, board: board} = state) do
     {active, waiting} =
-      Game.activePlayer(board)
-      |> player_and_other(players)
+      case Game.activePlayer(board) do
+        :x -> {x_pid, o_pid}
+        :o -> {o_pid, x_pid}
+      end
 
-
-    send(active, {:ok, %{status: :your_turn, board: state.board}})
-    send(waiting, {:ok, %{status: :other_turn, board: state.board}})
+    send(active, {:ok, %{status: :your_turn, board: board}})
+    send(waiting, {:ok, %{status: :other_turn, board: board}})
 
     state
   end
 
-  defp announce_result(state, result) do
+  defp announce_result(%{players: %{x: x_pid, o: o_pid}} = state, result) do
     case result do
       :draw ->
         state.players
-        |> Enum.map(&send(&1, {:ok, %{status: :draw, board: state.board}}))
+        |> Enum.each(&send(&1, {:ok, %{status: :draw, board: state.board}}))
+
       {:win, winner} ->
-        {winner, loser} = player_and_other(winner, state.players)
+        {winner, loser} =
+          case winner do
+            :x -> {x_pid, o_pid}
+            :o -> {o_pid, x_pid}
+          end
 
         send(loser, {:ok, %{status: :you_lost, board: state.board}})
         send(winner, {:ok, %{status: :you_won, board: state.board}})
@@ -153,7 +150,7 @@ defmodule TicTacToe do
           state =
             case Game.result?(board) do
               nil -> activate_players(state)
-              result-> announce_result(state, result)
+              result -> announce_result(state, result)
             end
 
           {:reply, {:ok, state}, state}
@@ -165,31 +162,24 @@ defmodule TicTacToe do
   end
 
   def handle_call(:join, {pid, _}, state) do
-    players =
-      case state.players do
-          %{x: _, o: _} -> nil
-          %{x: _} = players -> Map.put(players, :o, pid)
-          _ -> %{x: pid}
-      end
+    case state.players do
+      %{x: _, o: _} ->
+        {:reply, {:error, :game_full, state}}
 
-    case players do
-    nil -> {:reply, {:error, :game_full, state}}
-    players ->
-      state =
-        state
-        |> Map.put(:players, players)
+      %{x: _} = players ->
+        state = %{state | players: Map.put(players, :o, pid)} |> activate_players()
+        {:reply, {:ok, %{status: :waiting, my_symbol: pid_to_symbol(state.players, pid)}}, state}
 
-      with %{x: _, o: _} <- players do activate_players(state) end
-
-      {:reply, {:ok, %{status: :waiting, my_symbol: pid_to_symbol(state.players, pid)}}, state}
-
+      %{} ->
+        state = %{state | players: %{x: pid}}
+        {:reply, {:ok, %{status: :waiting, my_symbol: pid_to_symbol(state.players, pid)}}, state}
     end
   end
 
-  def handle_cast(:restart, state) do
+  def handle_cast(:restart, %{players: %{x: x_pid, o: o_pid}} = state) do
     state =
       state
-      |> Map.put(:players, state.players |> Enum.reverse())
+      |> Map.put(:players, %{x: o_pid, o: x_pid})
       |> Map.put(:board, [nil, nil, nil, nil, nil, nil, nil, nil, nil])
       |> activate_players()
 
