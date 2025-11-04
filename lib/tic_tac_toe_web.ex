@@ -1,12 +1,12 @@
-defmodule TicTacToeLiveWeb do
+defmodule TicTacToeWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
   This can be used in your application as:
 
-      use TicTacToeLiveWeb, :controller
-      use TicTacToeLiveWeb, :html
+      use TicTacToeWeb, :controller
+      use TicTacToeWeb, :html
 
   The definitions below will be executed for every controller,
   component, etc, so keep them short and clean, focused
@@ -40,7 +40,7 @@ defmodule TicTacToeLiveWeb do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
 
-      use Gettext, backend: TicTacToeLiveWeb.Gettext
+      use Gettext, backend: TicTacToeWeb.Gettext
 
       import Plug.Conn
 
@@ -80,16 +80,16 @@ defmodule TicTacToeLiveWeb do
   defp html_helpers do
     quote do
       # Translation
-      use Gettext, backend: TicTacToeLiveWeb.Gettext
+      use Gettext, backend: TicTacToeWeb.Gettext
 
       # HTML escaping functionality
       import Phoenix.HTML
       # Core UI components
-      import TicTacToeLiveWeb.CoreComponents
+      import TicTacToeWeb.CoreComponents
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
-      alias TicTacToeLiveWeb.Layouts
+      alias TicTacToeWeb.Layouts
 
       # Routes generation with the ~p sigil
       unquote(verified_routes())
@@ -99,9 +99,9 @@ defmodule TicTacToeLiveWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: TicTacToeLiveWeb.Endpoint,
-        router: TicTacToeLiveWeb.Router,
-        statics: TicTacToeLiveWeb.static_paths()
+        endpoint: TicTacToeWeb.Endpoint,
+        router: TicTacToeWeb.Router,
+        statics: TicTacToeWeb.static_paths()
     end
   end
 

@@ -1,4 +1,4 @@
-defmodule TicTacToeLive.Application do
+defmodule TicTacToe.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,19 +8,19 @@ defmodule TicTacToeLive.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      TicTacToeLiveWeb.Telemetry,
-      {DNSCluster, query: Application.get_env(:tic_tac_toe_live, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: TicTacToeLive.PubSub},
-      # Start a worker by calling: TicTacToeLive.Worker.start_link(arg)
-      # {TicTacToeLive.Worker, arg},
+      TicTacToeWeb.Telemetry,
+      {DNSCluster, query: Application.get_env(:tic_tac_toe, :dns_cluster_query) || :ignore},
+      {Phoenix.PubSub, name: TicTacToe.PubSub},
+      # Start a worker by calling: TicTacToe.Worker.start_link(arg)
+      # {TicTacToe.Worker, arg},
       # Start to serve requests, typically the last entry
-      TicTacToeLiveWeb.Endpoint,
+      TicTacToeWeb.Endpoint,
       {Registry, keys: :unique, name: TicTacToe.Registry}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: TicTacToeLive.Supervisor]
+    opts = [strategy: :one_for_one, name: TicTacToe.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -28,7 +28,7 @@ defmodule TicTacToeLive.Application do
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
-    TicTacToeLiveWeb.Endpoint.config_change(changed, removed)
+    TicTacToeWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

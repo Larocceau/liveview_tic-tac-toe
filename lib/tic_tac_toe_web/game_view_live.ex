@@ -1,19 +1,19 @@
-defmodule TicTacToeLiveWeb.GameViewLive do
-  use TicTacToeLiveWeb, :live_view
+defmodule TicTacToeWeb.GameViewLive do
+  use TicTacToeWeb, :live_view
 
   def connect(join_code, socket) do
     code =
       case join_code do
         nil ->
           code = UUID.uuid1()
-          {:ok, _} = TicTacToe.start_link(code)
+          {:ok, _} = TicTacToe.GameServer.start_link(code)
           code
 
         code ->
           code
       end
 
-    case TicTacToe.join(code) do
+    case TicTacToe.GameServer.join(code) do
       {:ok, state} ->
         socket
         |> assign(:my_symbol, state.my_symbol)
@@ -73,12 +73,12 @@ defmodule TicTacToeLiveWeb.GameViewLive do
 
   @impl true
   def handle_event("choose", params, socket) do
-    TicTacToe.choose(socket.assigns.game_id, params["index"] |> String.to_integer())
+    TicTacToe.GameServer.choose(socket.assigns.game_id, params["index"] |> String.to_integer())
     {:noreply, socket}
   end
 
   def handle_event("restart", _, socket) do
-    TicTacToe.restart(socket.assigns.game_id)
+    TicTacToe.GameServer.restart(socket.assigns.game_id)
     {:noreply, socket}
   end
 

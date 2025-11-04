@@ -1,11 +1,11 @@
 import Config
 
 # Configure your database
-config :tic_tac_toe_live, TicTacToeLive.Repo,
+config :tic_tac_toe, TicTacToe.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "tic_tac_toe_live_dev",
+  database: "tic_tac_toe_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -16,7 +16,7 @@ config :tic_tac_toe_live, TicTacToeLive.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :tic_tac_toe_live, TicTacToeLiveWeb.Endpoint,
+config :tic_tac_toe, TicTacToeWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {0, 0, 0, 0}, port: String.to_integer(System.get_env("PORT") || "4000")],
@@ -25,8 +25,8 @@ config :tic_tac_toe_live, TicTacToeLiveWeb.Endpoint,
   debug_errors: true,
   secret_key_base: "LUPGTFzU40aO5Nw9JLN497BFPMas0EDZ9n/cE/3faRKUf1XgjkVJDqK72gbRKIR5",
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:tic_tac_toe_live, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:tic_tac_toe_live, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:tic_tac_toe, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:tic_tac_toe, ~w(--watch)]}
   ]
 
 # ## SSL Support
@@ -53,18 +53,18 @@ config :tic_tac_toe_live, TicTacToeLiveWeb.Endpoint,
 # different ports.
 
 # Watch static and templates for browser reloading.
-config :tic_tac_toe_live, TicTacToeLiveWeb.Endpoint,
+config :tic_tac_toe, TicTacToeWeb.Endpoint,
   live_reload: [
     web_console_logger: true,
     patterns: [
       ~r"priv/static/(?!uploads/).*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
-      ~r"lib/tic_tac_toe_live_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
+      ~r"lib/tic_tac_toe_web/(?:controllers|live|components|router)/?.*\.(ex|heex)$"
     ]
   ]
 
 # Enable dev routes for dashboard and mailbox
-config :tic_tac_toe_live, dev_routes: true
+config :tic_tac_toe, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"

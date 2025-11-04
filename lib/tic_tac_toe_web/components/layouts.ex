@@ -1,9 +1,9 @@
-defmodule TicTacToeLiveWeb.Layouts do
+defmodule TicTacToeWeb.Layouts do
   @moduledoc """
   This module holds layouts and related functionality
   used by your application.
   """
-  use TicTacToeLiveWeb, :html
+  use TicTacToeWeb, :html
 
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML

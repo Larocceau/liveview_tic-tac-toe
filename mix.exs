@@ -1,9 +1,9 @@
-defmodule TicTacToeLive.MixProject do
+defmodule TicTacToe.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :tic_tac_toe_live,
+      app: :tic_tac_toe,
       version: "0.1.0",
       elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -20,7 +20,7 @@ defmodule TicTacToeLive.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {TicTacToeLive.Application, []},
+      mod: {TicTacToe.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
@@ -63,7 +63,7 @@ defmodule TicTacToeLive.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      { :uuid, "~> 1.1" }
+      {:uuid, "~> 1.1"}
     ]
   end
 
@@ -78,10 +78,10 @@ defmodule TicTacToeLive.MixProject do
       setup: ["deps.get", "assets.setup", "assets.build"],
       test: ["test"],
       "assets.setup": ["tailwind.install --if-missing", "esbuild.install --if-missing"],
-      "assets.build": ["compile", "tailwind tic_tac_toe_live", "esbuild tic_tac_toe_live"],
+      "assets.build": ["compile", "tailwind tic_tac_toe", "esbuild tic_tac_toe"],
       "assets.deploy": [
-        "tailwind tic_tac_toe_live --minify",
-        "esbuild tic_tac_toe_live --minify",
+        "tailwind tic_tac_toe --minify",
+        "esbuild tic_tac_toe --minify",
         "phx.digest"
       ],
       precommit: ["compile --warning-as-errors", "deps.unlock --unused", "format", "test"]

@@ -1,5 +1,5 @@
-defmodule TicTacToeLiveWeb.PageControllerTest do
-  use TicTacToeLiveWeb.ConnCase
+defmodule TicTacToeWeb.PageControllerTest do
+  use TicTacToeWeb.ConnCase
 
   test "GET /", %{conn: conn} do
     conn = get(conn, ~p"/")

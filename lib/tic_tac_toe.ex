@@ -1,6 +1,6 @@
-defmodule TicTacToeLive do
+defmodule TicTacToe do
   @moduledoc """
-  TicTacToeLive keeps the contexts that define your domain
+  TicTacToe keeps the contexts that define your domain
   and business logic.
 
   Contexts are also responsible for managing your data, regardless
