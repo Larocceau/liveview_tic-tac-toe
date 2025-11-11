@@ -113,7 +113,7 @@ defmodule TicTacToeWeb.GameLive do
         <% else %>
           <.status_badge status={@status} />
           <%= if not is_nil(Map.get(assigns, :board)&& Map.get(assigns, :my_symbol)) do %>
-            <.board board={@board} my_symbol={@my_symbol} />
+            <.board board={@board} my_symbol={@my_symbol} status={@status} />
           <% end %>
           <%= if Enum.member?([:you_won, :you_lost, :draw], @status) do %>
             <button phx-click="restart" class="btn">Restart</button>
